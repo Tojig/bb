@@ -18,7 +18,7 @@ public class BbIanicApplication {
 
 		@GetMapping("/hello")
 		public String getHello() {
-			return "Hello 1.0";
+			return "Hello 0.92";
 		}
 	}
 }

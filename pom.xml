@@ -10,12 +10,13 @@
 	</parent>
 	<groupId>fr.ippon</groupId>
 	<artifactId>bb-ianic</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>bb-ianic</name>
 	<description>Demo AWS Deployment Pipeline</description>
 
 	<properties>
 		<java.version>11</java.version>
+		<dockerfile-maven.version>1.4.13</dockerfile-maven.version>
 	</properties>
 
 	<dependencies>
@@ -47,6 +48,31 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven.version}</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<goal>build</goal>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dockerfile>misc/docker/Dockerfile</dockerfile>
+					<repository>448878779811.dkr.ecr.us-east-1.amazonaws.com/blackbelt-ianic</repository>
+<!--					<repository>${env.REPOSITORY_URI}</repository>-->
+					<tag>${project.version}</tag>
+					<buildArgs>
+						<JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
+					</buildArgs>
+					<verbose>true</verbose>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

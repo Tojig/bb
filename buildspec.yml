@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=448878779811.dkr.ecr.us-east-1.amazonaws.com/blackbelt-ianic
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      # GET POMs Project Version
+      - IMAGE_TAG=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)
+  install:
+    runtime-versions:
+      java: openjdk11
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - mvn package
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Taggin image...
+      - mvn dockerfile:tag
+      - echo Pushing the Docker images...
+      - mvn -Dmaven.deploy.skip deploy
+      - echo Writing image definitions file...
+      - printf '[{"name":"spring-jar-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+  files: 'imagedefinitions.json'
